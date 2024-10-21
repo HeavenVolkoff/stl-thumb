@@ -90,6 +90,19 @@ fn create_headless_display(config: &Config) -> Result<glium::HeadlessRenderer, B
     Ok(display)
 }
 
+#[cfg(target_os = "macos")]
+fn create_headless_display(config: &Config) -> Result<glium::HeadlessRenderer, Box<dyn Error>> {
+    let size = PhysicalSize::new(config.width, config.height);
+    let event_loop: EventLoop<()> = EventLoopBuilder::new().build();
+    let cb = glutin::ContextBuilder::new();
+    let context = cb.build_headless(&event_loop, size)?;
+
+    let context = unsafe { context.treat_as_current() };
+    let display = glium::backend::glutin::headless::Headless::new(context)?;
+    print_context_info(&display);
+    Ok(display)
+}
+
 #[cfg(target_os = "linux")]
 fn create_headless_display(config: &Config) -> Result<glium::HeadlessRenderer, Box<dyn Error>> {
     use glium::glutin::platform::unix::{EventLoopBuilderExtUnix, HeadlessContextExt};
@@ -142,6 +155,24 @@ fn create_headless_display(config: &Config) -> Result<glium::HeadlessRenderer, B
     Ok(display)
 }
 
+#[cfg(target_os = "macos")]
+fn get_shader() -> (&'static str, &'static str) {
+    return (include_str!("shaders/model.macos.vert"),
+            include_str!("shaders/model.macos.frag"))
+}
+
+#[cfg(target_os = "windows")]
+fn get_shader() -> (&'static str, &'static str) {
+    return (include_str!("shaders/model.vert"),
+            include_str!("shaders/model.frag"))
+}
+
+#[cfg(target_os = "linux")]
+fn get_shader() -> (&'static str, &'static str) {
+    return (include_str!("shaders/model.vert"),
+            include_str!("shaders/model.frag"))
+}
+
 fn render_pipeline<F>(
     display: &F,
     config: &Config,
@@ -168,8 +199,7 @@ where
     // Load and compile shaders
     // ------------------------
 
-    let vertex_shader_src = include_str!("shaders/model.vert");
-    let pixel_shader_src = include_str!("shaders/model.frag");
+    let (vertex_shader_src, pixel_shader_src) = get_shader();
 
     // TODO: Cache program binary
     let program = glium::Program::from_source(display, vertex_shader_src, pixel_shader_src, None);
