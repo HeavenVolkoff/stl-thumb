@@ -205,23 +205,14 @@ impl Mesh {
             model_had_normals: true,
         };
 
-        let mut face_count = 0;
         mesh.process_tri(&t1, recalc_normals);
-        face_count += 1;
-
         for triangle in stl_iter {
             mesh.process_tri(&triangle?, recalc_normals);
-            face_count += 1;
-            //debug!("{:?}",triangle);
         }
 
         if !mesh.model_had_normals {
-            warn!("STL file missing surface normals");
+            println!("STL file missing surface normals");
         }
-        info!("Bounds:");
-        info!("{}", mesh.bounds);
-        info!("Center:\t{:?}", mesh.bounds.center());
-        info!("Triangles processed:\t{}\n", face_count);
 
         Ok(mesh)
     }
@@ -337,7 +328,6 @@ impl Mesh {
             .max(self.bounds.width())
             .max(self.bounds.height());
         let scale = 2.0 / longest;
-        info!("Scale:\t{}", scale);
         let scale_matrix = cgmath::Matrix4::from_scale(scale);
         scale_matrix * translation_matrix
     }

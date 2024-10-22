@@ -29,28 +29,19 @@ struct SpriteVertex {
 
 implement_vertex!(SpriteVertex, position, i_tex_coords);
 
-#[cfg(target_os = "macos")]
-fn get_shader() -> (&'static str, &'static str) {
-    return (
-        include_str!("shaders/fxaa.macos.vert"),
-        include_str!("shaders/fxaa.macos.frag"),
-    );
-}
+fn get_shader() -> (String, String) {
+    let version = if cfg!(target_os = "android") || cfg!(target_os = "ios") {
+        "#version 100"
+    } else if cfg!(target_os = "macos") {
+        "#version 150"
+    } else {
+        "#version 120"
+    };
 
-#[cfg(target_os = "windows")]
-fn get_shader() -> (&'static str, &'static str) {
-    return (
-        include_str!("shaders/fxaa.vert"),
-        include_str!("shaders/fxaa.frag"),
-    );
-}
+    let vertex_shader_src = format!("{}\n{}", version, include_str!("shaders/fxaa.vert"));
+    let fragment_shader_src = format!("{}\n{}", version, include_str!("shaders/fxaa.frag"));
 
-#[cfg(target_os = "linux")]
-fn get_shader() -> (&'static str, &'static str) {
-    return (
-        include_str!("shaders/fxaa.vert"),
-        include_str!("shaders/fxaa.frag"),
-    );
+    (vertex_shader_src, fragment_shader_src)
 }
 
 impl FxaaSystem {
@@ -92,14 +83,7 @@ impl FxaaSystem {
             )
             .unwrap(),
 
-            program: program!(facade,
-                100 => {
-                    vertex: vertex,
-                    fragment: fragment,
-                }
-            )
-            .unwrap(),
-
+            program: program!(facade, 100 => {vertex: &vertex, fragment: &fragment }).unwrap(),
             target_color: RefCell::new(None),
             target_depth: RefCell::new(None),
         }

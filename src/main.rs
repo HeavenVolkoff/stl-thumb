@@ -1,10 +1,5 @@
-#[macro_use]
-extern crate log;
-extern crate stderrlog;
-
 extern crate stl_thumb;
 
-use std::process;
 use stl_thumb::config::Config;
 
 #[cfg(target_os = "linux")]
@@ -17,25 +12,8 @@ fn main() {
 
     let config = Config::new();
 
-    stderrlog::new()
-        .module(module_path!())
-        //.quiet(config.quiet)
-        .verbosity(config.verbosity)
-        //.timestamp(config.timestamp)
-        .init()
-        .unwrap();
-
-    info!("MODEL File: {}", config.model_filename);
-    info!("IMG File: {}", config.img_filename);
-
-    if config.visible {
-        if let Err(e) = stl_thumb::render_to_window(config) {
-            error!("Application error: {}", e);
-            process::exit(1);
-        }
-    } else if let Err(e) = stl_thumb::render_to_file(&config) {
-        error!("Application error: {}", e);
-        process::exit(1);
+    if let Err(e) = stl_thumb::render_to_file(&config) {
+        panic!("Application error: {}", e);
     }
 }
 

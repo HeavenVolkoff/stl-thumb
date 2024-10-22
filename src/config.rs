@@ -186,10 +186,7 @@ fn match_format(ext: &str) -> ImageFormat {
         "gif" => ImageFormat::Gif,
         "ico" => ImageFormat::Ico,
         "bmp" => ImageFormat::Bmp,
-        _ => {
-            warn!("Unsupported image format. Using PNG instead.");
-            ImageFormat::Png
-        }
+        _ => ImageFormat::Png,
     }
 }
 

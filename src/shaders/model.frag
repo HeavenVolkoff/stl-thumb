@@ -1,26 +1,47 @@
-#version 120
+#ifdef GL_ES
+precision mediump float; // Set medium precision for OpenGL ES
+#endif
 
-varying vec3 v_normal;
-varying vec3 v_position;
+#if __VERSION__ >= 130
+#define VARYING in
+out vec4 fragColor;
+#else
+#define VARYING varying
+#endif
 
+VARYING vec3 v_normal;
+VARYING vec3 v_position;
+
+// Uniforms
 uniform vec3 u_light;
-
 uniform vec3 ambient_color;
 uniform vec3 diffuse_color;
 uniform vec3 specular_color;
 
 void main() {
-    float diffuse = max(dot(normalize(v_normal), normalize(u_light)), 0.0);
+    // Normalize inputs
+    vec3 N = normalize(v_normal); // Normal vector
+    vec3 L = normalize(u_light); // Light direction
 
-    vec3 camera_dir = normalize(-v_position);
-    vec3 half_direction = normalize(normalize(u_light) + camera_dir);
-    float specular = pow(max(dot(half_direction, normalize(v_normal)), 0.0), 16.0);
+    // Diffuse lighting: Lambertian reflectance
+    float diffuse = max(dot(N, L), 0.0);
 
-    // Alternative specular method
-    // vec3 R = reflect( normalize(-u_light), normalize(v_normal) );
-    // float cosAlpha = clamp( dot(camera_dir,R), 0, 1 );
-    // float specular = pow( cosAlpha, 4.0 );
+    // Specular lighting (Phong reflection model)
+    vec3 V = normalize(-v_position); // View direction
+    vec3 H = normalize(L + V); // Halfway vector
+    float specular = pow(max(dot(N, H), 0.0), 16.0);
 
-    gl_FragColor = vec4(ambient_color + diffuse * diffuse_color + specular * specular_color, 1.0);
+    // Alternative specular method (commented out)
+    // vec3 R = reflect(-L, N);                  // Reflection vector
+    // float cosAlpha = max(dot(V, R), 0.0);
+    // float specular = pow(cosAlpha, 4.0);
+
+    // Final color output
+    vec3 final_color = ambient_color + diffuse * diffuse_color + specular * specular_color;
+
+    #if __VERSION__ >= 130
+    fragColor = vec4(final_color, 1.0);
+    #else
+    gl_FragColor = vec4(final_color, 1.0);
+    #endif
 }
-

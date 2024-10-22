@@ -9,9 +9,7 @@ license = "MIT"
 homepage = "https://github.com/unlimitedbacon/stl-thumb"
 keywords = ["3d", "3dprinting", "stl", "obj", "3mf"]
 categories = ["command-line-utilities", "graphics"]
-exclude = [
-    "test_data/*"
-]
+exclude = ["test_data/*"]
 edition = "2021"
 
 [lib]
@@ -26,20 +24,12 @@ path = "src/main.rs"
 [dependencies]
 ahash = "0.8.11"
 cgmath = { version = "0.18.0", features = ["mint"] }
-clap = "4.5.8"
-glium = "0.32"
-image = "0.25.1"
-libc = "0.2"
-log = "0.4.17"
-mint = "0.5.9"
-stderrlog = "0.6.0"
+clap = "4.5.20"
+glium = "0.32.1"
+image = "0.25.4"
 stl_io = "0.8.0"
 tobj = "4.0.2"
-winit = "0.30.3"
 threemf = "0.6.0"
-
-#[patch.crates-io]
-#glutin = { git = "https://github.com/rust-windowing/glutin.git", rev = "07c461e" }
 
 [build-dependencies]
 cbindgen = "0.27.*"
@@ -58,33 +48,3 @@ harness = false
 [[bench]]
 name = "shipwreck"
 harness = false
-
-[package.metadata.deb]
-license-file = ["LICENSE", "3"]
-depends = "libgl1, libc6, libgcc1, libosmesa6-dev"
-extended-description = """\
-Stl-thumb is a fast lightweight thumbnail generator for 3D model(STL, OBJ, 3MF) files. \
-It can show previews for 3D model files in your file manager on Linux and Windows. \
-It is written in Rust and uses OpenGL. """
-section = "graphics"
-priority = "optional"
-assets = [
-    ["target/release/stl-thumb",        "usr/bin/",                 "755"],
-    ["target/release/libstl_thumb.so",  "usr/lib/",                 "755"],
-    ["target/release/libstl_thumb.a",   "usr/lib/",                 "644"],
-    ["stl-thumb.thumbnailer",           "usr/share/thumbnailers/",  "644"],
-    ["stl-thumb-mime.xml",              "usr/share/mime/packages/", "644"],
-    ["libstl_thumb.h",                  "usr/include/",             "644"],
-    ["README.md",                       "usr/share/doc/stl-thumb/", "644"],
-]
-
-[package.metadata.generate-rpm]
-assets = [
-    { source = "./target/release/stl-thumb",        dest = "/usr/bin/stl-thumb",                                mode = "755" },
-    { source = "./target/release/libstl_thumb.so",  dest = "/usr/lib64/libstl_thumb.so",                        mode = "755" },
-    { source = "./target/release/libstl_thumb.a",   dest = "/usr/lib64/libstl_thumb.a",                         mode = "644" },
-    { source = "libstl_thumb.h",                    dest = "/usr/include/libstl_thumb.h",                       mode = "644" },
-    { source = "stl-thumb.thumbnailer",             dest = "/usr/share/thumbnailers/stl-thumb.thumbnailer",     mode = "644" },
-    { source = "stl-thumb-mime.xml",                dest = "/usr/share/mime/packages/stl-thumb-mime.xml",       mode = "644" },
-    { source = "README.md",                         dest = "/usr/share/doc/stl-thumb/README.md",    doc = true, mode = "644" }
-]
