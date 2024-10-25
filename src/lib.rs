@@ -5,12 +5,12 @@ mod render;
 mod shader;
 
 use std::error::Error;
-use std::io;
 use std::path::Path;
 
 pub use config::Config;
 pub use error::{MeshError, RenderError};
 use glam::Vec3;
+#[cfg(feature = "image")]
 use image::{ImageBuffer, ImageEncoder, ImageFormat, Rgba};
 use mesh::Mesh;
 
@@ -66,6 +66,7 @@ pub async fn render(
 ///
 /// This function will return an error if the model file cannot be loaded,
 /// or if the rendering process fails.
+#[cfg(feature = "image")]
 pub async fn render_to_image(
     filename: &Path,
     opts: &RenderOptions,
@@ -85,12 +86,15 @@ pub async fn render_to_image(
 ///
 /// This function will return an error if the model file cannot be loaded,
 /// if the rendering process fails, or if the image cannot be written to the file.
+#[cfg(feature = "image")]
 pub async fn render_to_file(
     model_filename: &Path,
     img_filename: &Path,
     format: ImageFormat,
     opts: &RenderOptions,
 ) -> Result<(), Box<dyn Error>> {
+    use std::io;
+
     let img = render_to_image(model_filename, opts).await?;
 
     // Choose output
@@ -162,6 +166,7 @@ pub async fn render_to_file(
 /// * `output_buf` _must_ point to a valid initialized buffer, at least `width * height * 4` bytes long.
 /// * `filename` must point to a valid null-terminated string.
 /// * `cam_position` must point to an array of 3 floats.
+#[cfg(feature = "capi")]
 #[no_mangle]
 pub unsafe extern "C" fn render_to_buffer(
     filename: *const libc::c_char,
@@ -173,6 +178,7 @@ pub unsafe extern "C" fn render_to_buffer(
     recalc_normals: bool,
     output_buf: *mut u8,
 ) -> bool {
+    use core::slice::{from_raw_parts, from_raw_parts_mut};
     use tracing::error;
 
     // Check that the buffer pointer is valid
@@ -180,8 +186,9 @@ pub unsafe extern "C" fn render_to_buffer(
         error!("Image buffer pointer is null");
         return false;
     }
-    let buf_size = (width * height * 4) as usize;
-    let buf = unsafe { core::slice::from_raw_parts_mut(output_buf, buf_size) };
+
+    let buf_size = width as usize * height as usize * 4;
+    let buf = unsafe { from_raw_parts_mut(output_buf, buf_size) };
 
     // Check validity of provided file path string
     if filename.is_null() {
@@ -199,7 +206,7 @@ pub unsafe extern "C" fn render_to_buffer(
         error!("Camera position pointer is null");
         return false;
     }
-    let cam_position = unsafe { core::slice::from_raw_parts(cam_position, 3) };
+    let cam_position = unsafe { from_raw_parts(cam_position, 3) };
 
     // Create a runtime to block on the async function
     let runtime = match tokio::runtime::Runtime::new() {
@@ -244,6 +251,7 @@ pub struct RenderParams {
 }
 
 #[cfg(test)]
+#[cfg(feature = "image")]
 mod tests {
     #![allow(clippy::borrow_interior_mutable_const)]
 
@@ -267,7 +275,7 @@ mod tests {
         }
 
         render_to_file(
-            Path::new("test_data/cube.stl"),
+            Path::new("test/data/cube.stl"),
             img_filename,
             ImageFormat::Png,
             &(&*CONFIG).into(),
@@ -289,7 +297,7 @@ mod tests {
         }
 
         render_to_file(
-            Path::new("test_data/cube.obj"),
+            Path::new("test/data/cube.obj"),
             img_filename,
             ImageFormat::Png,
             &(&*CONFIG).into(),
@@ -311,7 +319,7 @@ mod tests {
         }
 
         render_to_file(
-            Path::new("test_data/cube.3mf"),
+            Path::new("test/data/cube.3mf"),
             img_filename,
             ImageFormat::Png,
             &(&*CONFIG).into(),

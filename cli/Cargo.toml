@@ -1,0 +1,35 @@
+[package]
+name    = "stl-thumb-cli"
+version = "0.5.0"
+
+authors = [
+  "Tyler Anderson <unlimitedbacon@gmail.com>",
+  "Vítor Vasconcellos <vasconcellos.dev@gmail.com>"
+]
+
+categories           = ["command-line-utilities", "graphics"]
+description          = "A fast lightweight thumbnail generator for 3D model(STL, OBJ, 3MF) files"
+edition.workspace    = true
+keywords.workspace   = true
+license.workspace    = true
+readme               = "README.md"
+repository.workspace = true
+
+[[bin]]
+name = "stl-thumb"
+path = "src/main.rs"
+
+[dependencies]
+stl-thumb = { path = "../", features = ["image"] }
+
+image.workspace              = true
+tracing-subscriber.workspace = true
+tracing.workspace            = true
+
+clap = '4.5'
+md5 = "0.7.0"
+
+[dependencies.tokio]
+default-features = false
+features         = ["macros"]
+workspace        = true

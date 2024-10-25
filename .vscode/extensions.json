@@ -5,6 +5,7 @@
     "tamasfe.even-better-toml",
     "nolanderc.glasgow",
     "PolyMeilex.wgsl",
-    "redhat.vscode-yaml"
+    "redhat.vscode-yaml",
+    "llvm-vs-code-extensions.vscode-clangd"
   ]
 }

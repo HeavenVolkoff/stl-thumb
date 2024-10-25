@@ -15,4 +15,7 @@
   "rust-analyzer.checkOnSave.command": "clippy",
   "rust-analyzer.checkOnSave.enable": true,
   "rust-analyzer.cargo.allFeatures": true,
+  "clangd.enableCodeCompletion": true,
+  "clangd.restartAfterCrash": true,
+  "clangd.arguments": ["--enable-config"]
 }

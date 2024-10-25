@@ -3,7 +3,7 @@ use std::path::Path;
 use criterion::{criterion_group, criterion_main, BenchmarkId, Criterion};
 use stl_thumb::RenderOptions;
 
-const MODELS_DIR: &str = "test_data";
+const MODELS_DIR: &str = "test/data";
 
 async fn render(file_path: &Path) {
     stl_thumb::render(

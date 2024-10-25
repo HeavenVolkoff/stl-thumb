@@ -1,5 +1,78 @@
-# Created by https://www.toptal.com/developers/gitignore/api/rust,visualstudiocode,windows,macos,linux
-# Edit at https://www.toptal.com/developers/gitignore?templates=rust,visualstudiocode,windows,macos,linux
+# Created by https://www.toptal.com/developers/gitignore/api/c,c++,rust,visualstudiocode,windows,macos,linux
+# Edit at https://www.toptal.com/developers/gitignore?templates=c,c++,rust,visualstudiocode,windows,macos,linux
+
+### C ###
+# Prerequisites
+*.d
+
+# Object files
+*.o
+*.ko
+*.obj
+*.elf
+
+# Linker output
+*.ilk
+*.map
+*.exp
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Libraries
+*.lib
+*.a
+*.la
+*.lo
+
+# Shared objects (inc. Windows DLLs)
+*.dll
+*.so
+*.so.*
+*.dylib
+
+# Executables
+*.exe
+*.out
+*.app
+*.i*86
+*.x86_64
+*.hex
+
+# Debug files
+*.dSYM/
+*.su
+*.idb
+*.pdb
+
+# Kernel Module Compile Results
+*.mod*
+*.cmd
+.tmp_versions/
+modules.order
+Module.symvers
+Mkfile.old
+dkms.conf
+
+### C++ ###
+# Prerequisites
+
+# Compiled Object files
+*.slo
+
+# Precompiled Headers
+
+# Compiled Dynamic libraries
+
+# Fortran module files
+*.mod
+*.smod
+
+# Compiled Static libraries
+*.lai
+
+# Executables
 
 ### Linux ###
 *~
@@ -24,6 +97,7 @@
 
 # Icon must end with two \r
 Icon
+
 
 # Thumbnails
 ._*
@@ -62,7 +136,6 @@ Cargo.lock
 **/*.rs.bk
 
 # MSVC Windows builds of rustc generate these, which store debugging information
-*.pdb
 
 ### VisualStudioCode ###
 .vscode/*
@@ -109,8 +182,11 @@ $RECYCLE.BIN/
 # Windows shortcuts
 *.lnk
 
-# End of https://www.toptal.com/developers/gitignore/api/rust,visualstudiocode,windows,macos,linux
+# End of https://www.toptal.com/developers/gitignore/api/c,c++,rust,visualstudiocode,windows,macos,linux
 
 ## Project ##
+.cache
 **/*.rs.bk
 /*.png
+compile_commands.json
+test/test

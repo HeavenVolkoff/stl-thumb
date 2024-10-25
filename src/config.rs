@@ -1,9 +1,8 @@
-use image::ImageFormat;
-
 pub struct Config {
     pub model_filename: String,
     pub img_filename: String,
-    pub format: ImageFormat,
+    #[cfg(feature = "image")]
+    pub format: image::ImageFormat,
     pub width: u16,
     pub height: u16,
     pub verbosity: usize,
@@ -21,7 +20,8 @@ impl Default for Config {
         Self {
             model_filename: String::new(),
             img_filename: String::new(),
-            format: ImageFormat::Png,
+            #[cfg(feature = "image")]
+            format: image::ImageFormat::Png,
             width: 1024,
             height: 1024,
             verbosity: 0,

@@ -1,13 +1,20 @@
 mod utils;
 
+extern crate clap;
+extern crate md5;
+extern crate stl_thumb;
+extern crate tokio;
+extern crate tracing;
+extern crate tracing_subscriber;
+
 use std::path::Path;
 
 use clap::{Arg, ArgAction, Command};
-use stl_thumb::{render_to_file, Config};
+use stl_thumb::{render, render_to_file, Config};
 
 use crate::utils::{html_to_rgba, match_format};
 
-fn args() -> Result<Config, Box<dyn std::error::Error>> {
+fn args() -> Result<(Config, bool), Box<dyn std::error::Error>> {
     let matches = Command::new(env!("CARGO_PKG_NAME"))
         .version(env!("CARGO_PKG_VERSION"))
         .author(env!("CARGO_PKG_AUTHORS"))
@@ -80,6 +87,12 @@ fn args() -> Result<Config, Box<dyn std::error::Error>> {
                 .long("sample-count")
                 .action(ArgAction::Set)
                 .value_parser(clap::value_parser!(u32))
+        )
+        .arg(
+            Arg::new("md5")
+                .help("Calculate MD5 hash of the rendered model")
+                .long("md5")
+                .action(ArgAction::SetTrue),
         )
         .get_matches();
 
@@ -161,12 +174,19 @@ fn args() -> Result<Config, Box<dyn std::error::Error>> {
         );
     }
 
-    Ok(c)
+    if matches.get_flag("md5") && c.img_filename != "-" {
+        return Err(Box::new(std::io::Error::new(
+            std::io::ErrorKind::InvalidInput,
+            "IMG_FILE must be '-' when using --md5",
+        )));
+    };
+
+    Ok((c, matches.get_flag("md5")))
 }
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let config = args()?;
+    let (config, md5) = args()?;
 
     tracing_subscriber::fmt()
         .with_max_level(match config.verbosity {
@@ -176,15 +196,22 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             3 => tracing::Level::DEBUG,
             _ => tracing::Level::TRACE,
         })
+        .with_writer(std::io::stderr)
         .init();
 
-    render_to_file(
-        Path::new(&config.model_filename),
-        Path::new(&config.img_filename),
-        config.format,
-        &(&config).into(),
-    )
-    .await?;
+    if md5 {
+        let digest =
+            md5::compute(&render(Path::new(&config.model_filename), &(&config).into()).await?);
+        println!("MD5: {:x}", digest);
+    } else {
+        render_to_file(
+            Path::new(&config.model_filename),
+            Path::new(&config.img_filename),
+            config.format,
+            &(&config).into(),
+        )
+        .await?;
+    }
 
     Ok(())
 }

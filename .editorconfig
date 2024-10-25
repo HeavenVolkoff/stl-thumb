@@ -13,6 +13,12 @@ max_line_length = 100
 insert_final_newline = true
 trim_trailing_whitespace = true
 
+# C/C++
+# https://llvm.org/docs/CodingStandards.html#source-code-style
+[*.{c,h,cpp,hpp}]
+indent_size = 2
+indent_style = space
+
 # JavaScript, JSON, JSX, JavaScript Modules, TypeScript
 # https://github.com/feross/standard
 # https://prettier.io

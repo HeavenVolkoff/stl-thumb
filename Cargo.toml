@@ -1,3 +1,6 @@
+[workspace]
+members = [".", "cli"]
+
 [package]
 name    = "stl-thumb"
 version = "0.5.0"
@@ -6,43 +9,55 @@ authors = [
   "Tyler Anderson <unlimitedbacon@gmail.com>",
   "Vítor Vasconcellos <vasconcellos.dev@gmail.com>"
 ]
+include = ["/Cargo.toml", "/LICENSE", "/README.md", "/benches/**", "/cbindgen.toml", "/src/**"]
 
-categories  = ["command-line-utilities", "graphics"]
-description = "A fast lightweight thumbnail generator for 3D model(STL, OBJ, 3MF) files"
-homepage    = "https://github.com/unlimitedbacon/stl-thumb"
-keywords    = ["3d", "3dprinting", "3mf", "obj", "stl"]
-license     = "MIT"
-readme      = "README.md"
-repository  = "https://github.com/unlimitedbacon/stl-thumb"
+categories           = ["graphics"]
+description          = "A fast lightweight thumbnail generator for 3D model(STL, OBJ, 3MF) files"
+edition.workspace    = true
+homepage             = "https://github.com/unlimitedbacon/stl-thumb"
+keywords.workspace   = true
+license.workspace    = true
+readme               = "README.md"
+repository.workspace = true
 
-edition = "2021"
-exclude = ["test_data/*"]
+[workspace.package]
+edition    = "2021"
+keywords   = ["3d", "3dprinting", "3mf", "obj", "stl"]
+license    = "MIT"
+repository = "https://github.com/unlimitedbacon/stl-thumb"
+
+[features]
+capi    = ["dep:libc"]
+default = []
+image   = ["dep:image"]
 
 [dependencies]
-bytemuck           = { version = "1.19", features = ["derive"] }
-clap               = '4.5'
-glam               = { version = "0.29.0", features = ["bytemuck"] }
+image                        = { workspace = true, optional = true }
+tracing-subscriber.workspace = true
+tracing.workspace            = true
+
+bytemuck  = { version = "1.19", features = ["derive"] }
+glam      = { version = "0.29.0", features = ["bytemuck"] }
+libc      = { version = '0.2.161', optional = true }
+stl_io    = "0.8.0"
+thiserror = "1.0"
+threemf   = "0.6.0"
+tobj      = "4.0.2"
+wgpu      = "22.1"
+
+[workspace.dependencies]
 image              = "0.25.4"
-libc               = '0.2.161'
-stl_io             = "0.8.0"
-thiserror          = "1.0"
-threemf            = "0.6.0"
-tobj               = "4.0.2"
+tokio              = { version = "1.41", default-features = false }
 tracing            = "0.1.40"
 tracing-subscriber = "0.3.18"
-wgpu               = "22.1"
 
 [dependencies.tokio]
 default-features = false
 features         = ["macros", "rt-multi-thread", "sync"]
-version          = "1.41"
+workspace        = true
 
 [dev-dependencies]
 criterion = { version = "0.5.1", features = ["async_tokio"] }
-
-[[bin]]
-name = "stl-thumb"
-path = "src/main.rs"
 
 [[bench]]
 harness = false
