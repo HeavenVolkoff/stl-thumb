@@ -1,0 +1,10 @@
+{
+  "recommendations": [
+    "rust-lang.rust-analyzer",
+    "editorconfig.editorconfig",
+    "tamasfe.even-better-toml",
+    "nolanderc.glasgow",
+    "PolyMeilex.wgsl",
+    "redhat.vscode-yaml"
+  ]
+}

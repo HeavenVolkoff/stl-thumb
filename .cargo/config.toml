@@ -1,9 +1,9 @@
 [target.armv7-unknown-linux-gnueabihf]
-linker = "arm-linux-gnueabihf-gcc"
-strip = { path = "/usr/bin/arm-linux-gnueabihf-strip" }
+linker  = "arm-linux-gnueabihf-gcc"
 objcopy = { path = "/usr/bin/arm-linux-gnueabihf-objcopy" }
+strip   = { path = "/usr/bin/arm-linux-gnueabihf-strip" }
 
 [target.aarch64-unknown-linux-gnu]
-linker = "aarch64-linux-gnu-gcc"
-strip = { path = "/usr/bin/aarch64-linux-gnu-strip" }
+linker  = "aarch64-linux-gnu-gcc"
 objcopy = { path = "/usr/bin/aarch64-linux-gnu-objcopy" }
+strip   = { path = "/usr/bin/aarch64-linux-gnu-strip" }
