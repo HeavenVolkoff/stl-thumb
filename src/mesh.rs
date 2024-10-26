@@ -1,6 +1,8 @@
-use std::fs::File;
-use std::io::{self, BufReader, Cursor, Read, Seek};
-use std::path::Path;
+use std::{
+    fs::File,
+    io::{self, BufReader, Cursor, Read, Seek},
+    path::Path,
+};
 
 use glam::{Mat4, Vec3};
 use stl_io::{read_stl, Normal, Triangle, Vector};

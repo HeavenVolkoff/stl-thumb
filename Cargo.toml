@@ -38,7 +38,6 @@ tracing.workspace            = true
 tracing-subscriber.workspace = true
 
 bytemuck  = { version = "1.19", features = ["derive"] }
-flume     = "0.11.1"
 glam      = { version = "0.29.0", features = ["bytemuck"] }
 libc      = { version = '0.2.161', optional = true }
 stl_io    = "0.8.0"
