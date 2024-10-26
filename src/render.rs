@@ -48,7 +48,7 @@ impl From<&Config> for RenderOptions {
 struct Textures {
     main: Texture,
     depth: Texture,
-    multisample: Texture,
+    multisample: Option<Texture>,
 }
 
 impl Textures {
@@ -77,11 +77,15 @@ impl Textures {
                 TextureUsages::RENDER_ATTACHMENT,
                 sample_count,
             ),
-            multisample: create_texture(
-                TextureFormat::Rgba8UnormSrgb,
-                TextureUsages::RENDER_ATTACHMENT,
-                sample_count,
-            ),
+            multisample: if sample_count > 1 {
+                Some(create_texture(
+                    TextureFormat::Rgba8UnormSrgb,
+                    TextureUsages::RENDER_ATTACHMENT,
+                    sample_count,
+                ))
+            } else {
+                None
+            },
         }
     }
 }
@@ -108,7 +112,7 @@ impl ThumbRenderer {
             .request_device(
                 &DeviceDescriptor {
                     label: None,
-                    required_features: Features::empty(),
+                    required_features: Features::TEXTURE_ADAPTER_SPECIFIC_FORMAT_FEATURES,
                     required_limits: Limits::downlevel_defaults(),
                     memory_hints: MemoryHints::MemoryUsage,
                 },
@@ -328,12 +332,16 @@ impl ThumbRenderer {
             let mut render_pass = command_encoder.begin_render_pass(&RenderPassDescriptor {
                 label: None,
                 color_attachments: &[Some(RenderPassColorAttachment {
-                    view: &textures
-                        .multisample
-                        .create_view(&TextureViewDescriptor::default()),
-                    resolve_target: Some(
-                        &textures.main.create_view(&TextureViewDescriptor::default()),
+                    view: &textures.multisample.as_ref().map_or_else(
+                        || textures.main.create_view(&TextureViewDescriptor::default()),
+                        |multisample| multisample.create_view(&TextureViewDescriptor::default()),
                     ),
+                    resolve_target: (if textures.multisample.is_some() {
+                        Some(textures.main.create_view(&TextureViewDescriptor::default()))
+                    } else {
+                        None
+                    })
+                    .as_ref(),
                     ops: Operations {
                         // TODO: Use the background color provided by the user
                         load: LoadOp::Clear(Color::TRANSPARENT),

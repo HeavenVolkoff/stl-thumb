@@ -83,8 +83,8 @@ fn args() -> Result<(Config, bool), Box<dyn std::error::Error>> {
         )
         .arg(
             Arg::new("sample_count")
-                .help("Number of samples for rendering")
-                .long("sample-count")
+                .help("Number of samples for anti-aliasing")
+                .long("msaa")
                 .action(ArgAction::Set)
                 .value_parser(clap::value_parser!(u32))
         )
