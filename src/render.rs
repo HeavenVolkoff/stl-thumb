@@ -332,16 +332,15 @@ impl ThumbRenderer {
             let mut render_pass = command_encoder.begin_render_pass(&RenderPassDescriptor {
                 label: None,
                 color_attachments: &[Some(RenderPassColorAttachment {
-                    view: &textures.multisample.as_ref().map_or_else(
-                        || textures.main.create_view(&TextureViewDescriptor::default()),
-                        |multisample| multisample.create_view(&TextureViewDescriptor::default()),
-                    ),
-                    resolve_target: (if textures.multisample.is_some() {
-                        Some(textures.main.create_view(&TextureViewDescriptor::default()))
-                    } else {
-                        None
-                    })
-                    .as_ref(),
+                    view: &textures
+                        .multisample
+                        .as_ref()
+                        .map_or_else(|| &textures.main, |multisample| multisample)
+                        .create_view(&TextureViewDescriptor::default()),
+                    resolve_target: textures
+                        .multisample
+                        .map(|_| textures.main.create_view(&TextureViewDescriptor::default()))
+                        .as_ref(),
                     ops: Operations {
                         // TODO: Use the background color provided by the user
                         load: LoadOp::Clear(Color::TRANSPARENT),
