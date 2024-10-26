@@ -1,9 +1,9 @@
-use core::mem::size_of;
+use std::{cell::RefCell, mem::size_of, sync::Arc};
 
 use glam::{Mat4, Vec3};
 use tracing::debug;
-use wgpu::util::{BufferInitDescriptor, DeviceExt};
 use wgpu::{
+    util::{BufferInitDescriptor, DeviceExt},
     BindGroupDescriptor, BindGroupEntry, BindGroupLayout, BindGroupLayoutDescriptor,
     BindGroupLayoutEntry, BindingType, BufferAddress, BufferBindingType, BufferDescriptor,
     BufferUsages, Color, CommandEncoderDescriptor, CompareFunction, DepthBiasState,
@@ -18,10 +18,12 @@ use wgpu::{
     VertexState, VertexStepMode,
 };
 
-use crate::error::RenderError;
-use crate::mesh::Mesh;
-use crate::shader::{FragUniformBlock, VertUniformBlock, SHADER};
-use crate::Config;
+use crate::{
+    error::RenderError,
+    mesh::Mesh,
+    shader::{FragUniformBlock, VertUniformBlock, SHADER},
+    Config,
+};
 
 pub struct RenderOptions {
     pub width: u16,
@@ -220,11 +222,16 @@ impl ThumbRenderer {
         })
     }
 
-    pub(crate) async fn render(
-        &self,
-        mesh: &Mesh,
-        opts: &RenderOptions,
-    ) -> Result<Vec<u8>, RenderError> {
+    pub(crate) fn render(&self, mesh: &Mesh, opts: &RenderOptions) -> Result<Vec<u8>, RenderError> {
+        struct IsSync(RefCell<Option<Result<(), wgpu::BufferAsyncError>>>);
+
+        // SAFETY: This is only used here and it's safe
+        // because we are only using it
+        // to communicate back the result of the map_async call
+        // and we are not using it for anything else
+        #[allow(unsafe_code)]
+        unsafe impl Sync for IsSync {}
+
         let device = &self.device;
 
         // Textures size
@@ -295,16 +302,12 @@ impl ThumbRenderer {
             );
 
             // Fragment uniform data (Input data for the fragment shader)
-            let frag_uniform_data = FragUniformBlock {
-                light_direction: [-1.1, 0.4, 1.0],
-                _padding1: 0.0,
-                ambient_color: [0.0, 0.13, 0.26],
-                _padding2: 0.0,
-                diffuse_color: [0.38, 0.63, 1.0],
-                _padding3: 0.0,
-                specular_color: [1.0, 1.0, 1.0],
-                _padding4: 0.0,
-            };
+            let frag_uniform_data = FragUniformBlock::new(
+                [-1.1, 0.4, 1.0],
+                [0.0, 0.13, 0.26],
+                [0.38, 0.63, 1.0],
+                [1.0, 1.0, 1.0],
+            );
 
             // Copy the fragment uniform data into a buffer to be sent to the GPU
             let frag_uniform_buffer = create_buffer(
@@ -402,15 +405,21 @@ impl ThumbRenderer {
 
         // Wait for model to be rendered then retrieve image data from the output buffer
         let buffer_slice = output_buffer.slice(..);
-        let (tx, rx) = flume::bounded(1);
-        buffer_slice.map_async(MapMode::Read, move |r| {
-            tx.send(r).expect("Failed to send render result to channel");
+
+        let res = Arc::new(IsSync(RefCell::new(None)));
+        buffer_slice.map_async(MapMode::Read, {
+            let res = Arc::clone(&res);
+            move |r| {
+                res.0.borrow_mut().replace(r);
+            }
         });
         device.poll(Maintain::wait()).panic_on_timeout();
-        rx.recv_async()
-            .await
-            .map_err(|e| RenderError::RenderError(format!("Failed to receive render result: {e}")))?
+        res.0
+            .borrow_mut()
+            .take()
+            .ok_or_else(|| RenderError::RenderError("Failed to receive render result".to_string()))?
             .map_err(|e| RenderError::RenderError(format!("Failed to map buffer: {e:?}")))?;
+
         debug!("Output buffer mapped successfully.");
 
         // Copy the mapped buffer's contents to texture_data

@@ -1,4 +1,4 @@
-#![cfg_attr(not(feature = "capi"), forbid(unsafe_code))]
+#![cfg_attr(not(feature = "capi"), deny(unsafe_code))]
 
 #[cfg(feature = "capi")]
 mod capi;
@@ -8,8 +8,7 @@ mod mesh;
 mod render;
 mod shader;
 
-use std::error::Error;
-use std::path::Path;
+use std::{error::Error, path::Path};
 
 #[cfg(feature = "image")]
 use image::{ImageBuffer, ImageEncoder, ImageFormat, Rgba};
@@ -17,10 +16,12 @@ use mesh::Mesh;
 
 #[cfg(feature = "capi")]
 pub use crate::capi::*;
-pub use crate::config::Config;
-pub use crate::error::{MeshError, RenderError};
-pub use crate::render::RenderOptions;
 use crate::render::ThumbRenderer;
+pub use crate::{
+    config::Config,
+    error::{MeshError, RenderError},
+    render::RenderOptions,
+};
 
 /// Renders a 3D model to a buffer.
 ///
@@ -32,16 +33,13 @@ pub async fn render(
     model_filename: &Path,
     opts: &RenderOptions,
 ) -> Result<Vec<u8>, Box<dyn Error>> {
-    Ok(ThumbRenderer::new(opts.sample_count)
-        .await?
-        .render(
-            &Mesh::load(
-                model_filename.to_str().ok_or("Invalid path")?,
-                opts.recalc_normals,
-            )?,
-            opts,
-        )
-        .await?)
+    Ok(ThumbRenderer::new(opts.sample_count).await?.render(
+        &Mesh::load(
+            model_filename.to_str().ok_or("Invalid path")?,
+            opts.recalc_normals,
+        )?,
+        opts,
+    )?)
 }
 
 /// Renders a 3D model to an image.
@@ -126,9 +124,7 @@ pub async fn render_to_file(
 mod tests {
     #![allow(clippy::borrow_interior_mutable_const)]
 
-    use std::cell::LazyCell;
-    use std::fs;
-    use std::io::ErrorKind;
+    use std::{cell::LazyCell, fs, io::ErrorKind};
 
     use config::Config;
 
