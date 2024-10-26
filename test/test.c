@@ -6,7 +6,7 @@
 
 #include <openssl/md5.h>
 
-#include "stl-thumb.h"
+#include "stl_thumb.h"
 
 int main(int argc, char *argv[]) {
   if (argc < 2) {

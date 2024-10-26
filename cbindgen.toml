@@ -1,18 +1,8 @@
-header = "// SPDX-License-Identifier: MIT"
-sys_includes = ["stdint.h", "stdbool.h"]
-no_includes = true
+cpp_compat    = true
+header        = "// SPDX-License-Identifier: MIT"
 include_guard = "STL_THUMB_H"
-tab_width = 4
-style = "Type"
-language = "C"
-cpp_compat = true
-
-[parse]
-parse_deps = true
-include = ['stl_thumb']
-
-[parse.expand]
-features = ["capi"]
-
-[export]
-include = ["render_to_buffer"]
+language      = "C"
+no_includes   = true
+style         = "Type"
+sys_includes  = ["stdbool.h", "stdint.h"]
+tab_width     = 4

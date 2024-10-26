@@ -20,7 +20,29 @@ use wgpu::{
 use crate::error::RenderError;
 use crate::mesh::Mesh;
 use crate::shader::{FragUniformBlock, VertUniformBlock, SHADER};
-use crate::RenderOptions;
+use crate::Config;
+
+pub struct RenderOptions {
+    pub width: u16,
+    pub height: u16,
+    pub cam_fov_deg: f32,
+    pub cam_position: Vec3,
+    pub sample_count: u32,
+    pub recalc_normals: bool,
+}
+
+impl From<&Config> for RenderOptions {
+    fn from(config: &Config) -> Self {
+        Self {
+            width: config.width,
+            height: config.height,
+            cam_fov_deg: config.cam_fov_deg,
+            cam_position: config.cam_position.into(),
+            sample_count: config.sample_count,
+            recalc_normals: config.recalc_normals,
+        }
+    }
+}
 
 struct Textures {
     main: Texture,
