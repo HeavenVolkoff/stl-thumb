@@ -8,7 +8,7 @@ Just execute `test.sh`, it will build all necessary binaries and run the test.
 
 ## Contributing to the test
 
-- Install clangd
+- Install clangd (If you are using VSCode the extension installs it automatically)
 
 - Install bear: https://github.com/rizsotto/Bear
 

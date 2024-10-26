@@ -49,27 +49,27 @@ export PKG_CONFIG_PATH
 # Default target
 all: build-shared build-static
 
-# Build shared library
 ifeq ($(shell uname),Darwin)
+# Build shared library
 build-shared:
 	@echo "Building shared library..."
 	@cargo cbuild $(CARGO_FLAGS) $(CARGO_C_FLAGS) --library-type cdylib
 # cargo-c is generating broken .pc files on macOS, so we need to fix them
 	@sed -i ''-E '/^(Libs|Libs.private):/ s/ -framework//g; /^(Libs|Libs.private):/ s/ ([A-Z][a-zA-Z]+)/ -framework \1/g' $(PKG_CONFIG_PATH)/{stl_thumb.pc,stl_thumb-uninstalled.pc}
-else
-build-shared:
-	@echo "Building shared library..."
-	@cargo cbuild $(CARGO_FLAGS) $(CARGO_C_FLAGS) --library-type cdylib
-endif
 
 # Build static library
-ifeq ($(shell uname),Darwin)
 build-static:
 	@echo "Building static library..."
 	@cargo cbuild $(CARGO_FLAGS) $(CARGO_C_FLAGS) --library-type staticlib
 # cargo-c is generating broken .pc files on macOS, so we need to fix them
 	@sed -i '' -E '/^(Libs|Libs.private):/ s/ -framework//g; /^(Libs|Libs.private):/ s/ ([A-Z][a-zA-Z]+)/ -framework \1/g' $(PKG_CONFIG_PATH)/{stl_thumb.pc,stl_thumb-uninstalled.pc}
 else
+# Build shared library
+build-shared:
+	@echo "Building shared library..."
+	@cargo cbuild $(CARGO_FLAGS) $(CARGO_C_FLAGS) --library-type cdylib
+
+# Build static library
 build-static:
 	@echo "Building static library..."
 	@cargo cbuild $(CARGO_FLAGS) $(CARGO_C_FLAGS) --library-type staticlib
