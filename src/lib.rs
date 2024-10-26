@@ -77,15 +77,15 @@ pub async fn render_to_file(
     format: ImageFormat,
     opts: &RenderOptions,
 ) -> Result<(), Box<dyn Error>> {
-    use std::io;
+    use std::{ffi, fs, io};
 
     let img = render_to_image(model_filename, opts).await?;
 
     // Choose output
     // Write to stdout if user did not specify a file
     let mut output: Box<dyn io::Write> = match &img_filename {
-        os if os == std::ffi::OsStr::new("-") => Box::new(io::stdout()),
-        out => Box::new(std::fs::File::create(out)?),
+        os if os == ffi::OsStr::new("-") => Box::new(io::stdout()),
+        out => Box::new(fs::File::create(out)?),
     };
 
     // write_to() requires a seekable writer for performance reasons.
@@ -121,6 +121,7 @@ pub async fn render_to_file(
     Ok(())
 }
 
+#[cfg(feature = "image")]
 #[cfg(test)]
 mod tests {
     #![allow(clippy::borrow_interior_mutable_const)]
@@ -136,7 +137,6 @@ mod tests {
     #[allow(clippy::declare_interior_mutable_const)]
     const CONFIG: LazyCell<Config> = LazyCell::new(Config::default);
 
-    #[cfg(feature = "image")]
     #[tokio::test]
     async fn cube_stl() {
         let img_filename = Path::new("cube-stl.png");
@@ -159,7 +159,6 @@ mod tests {
         assert_ne!(0, size);
     }
 
-    #[cfg(feature = "image")]
     #[tokio::test]
     async fn cube_obj() {
         let img_filename = Path::new("cube-obj.png");
@@ -182,7 +181,6 @@ mod tests {
         assert_ne!(0, size);
     }
 
-    #[cfg(feature = "image")]
     #[tokio::test]
     async fn cube_3mf() {
         let img_filename = Path::new("cube-3mf.png");

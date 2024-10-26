@@ -22,4 +22,3 @@ CompileFlags:
   Add:
     - --language=c
     - -std=c11
-    - -I../target/include

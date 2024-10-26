@@ -27,16 +27,18 @@ license    = "MIT"
 repository = "https://github.com/unlimitedbacon/stl-thumb"
 
 [features]
-capi    = ["dep:libc"]
+capi    = ["dep:libc", "dep:tokio", "tokio/rt-multi-thread"]
 default = []
 image   = ["dep:image"]
 
 [dependencies]
 image                        = { workspace = true, optional = true }
+tokio                        = { default-features = false, optional = true, workspace = true }
 tracing.workspace            = true
 tracing-subscriber.workspace = true
 
 bytemuck  = { version = "1.19", features = ["derive"] }
+flume     = "0.11.1"
 glam      = { version = "0.29.0", features = ["bytemuck"] }
 libc      = { version = '0.2.161', optional = true }
 stl_io    = "0.8.0"
@@ -51,13 +53,9 @@ tokio              = { version = "1.41", default-features = false }
 tracing            = "0.1.40"
 tracing-subscriber = "0.3.18"
 
-[dependencies.tokio]
-default-features = false
-features         = ["macros", "rt-multi-thread", "sync"]
-workspace        = true
-
 [dev-dependencies]
 criterion = { version = "0.5.1", features = ["async_tokio"] }
+tokio     = { default-features = false, features = ["macros", "rt-multi-thread"], workspace = true }
 
 [package.metadata.docs.rs]
 features = ["image"]

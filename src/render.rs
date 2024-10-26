@@ -5,16 +5,17 @@ use tracing::debug;
 use wgpu::util::{BufferInitDescriptor, DeviceExt};
 use wgpu::{
     BindGroupDescriptor, BindGroupEntry, BindGroupLayout, BindGroupLayoutDescriptor,
-    BindGroupLayoutEntry, BindingType, BufferBindingType, BufferDescriptor, BufferUsages, Color,
-    CommandEncoderDescriptor, CompareFunction, DepthBiasState, DepthStencilState, Device,
-    DeviceDescriptor, Extent3d, Face, Features, FragmentState, FrontFace, ImageCopyBuffer,
-    ImageCopyTexture, ImageDataLayout, IndexFormat, Instance, Limits, LoadOp, Maintain, MapMode,
-    MemoryHints, MultisampleState, Operations, Origin3d, PipelineCompilationOptions,
-    PipelineLayoutDescriptor, PrimitiveState, Queue, RenderPassColorAttachment,
-    RenderPassDepthStencilAttachment, RenderPassDescriptor, RenderPipeline,
-    RenderPipelineDescriptor, RequestAdapterOptions, ShaderStages, StencilState, StoreOp, Texture,
-    TextureAspect, TextureDescriptor, TextureDimension, TextureFormat, TextureUsages,
-    TextureViewDescriptor, VertexState,
+    BindGroupLayoutEntry, BindingType, BufferAddress, BufferBindingType, BufferDescriptor,
+    BufferUsages, Color, CommandEncoderDescriptor, CompareFunction, DepthBiasState,
+    DepthStencilState, Device, DeviceDescriptor, Extent3d, Face, Features, FragmentState,
+    FrontFace, ImageCopyBuffer, ImageCopyTexture, ImageDataLayout, IndexFormat, Instance, Limits,
+    LoadOp, Maintain, MapMode, MemoryHints, MultisampleState, Operations, Origin3d,
+    PipelineCompilationOptions, PipelineLayoutDescriptor, PrimitiveState, Queue,
+    RenderPassColorAttachment, RenderPassDepthStencilAttachment, RenderPassDescriptor,
+    RenderPipeline, RenderPipelineDescriptor, RequestAdapterOptions, ShaderStages, StencilState,
+    StoreOp, Texture, TextureAspect, TextureDescriptor, TextureDimension, TextureFormat,
+    TextureUsages, TextureViewDescriptor, VertexAttribute, VertexBufferLayout, VertexFormat,
+    VertexState, VertexStepMode,
 };
 
 use crate::error::RenderError;
@@ -160,22 +161,22 @@ impl ThumbRenderer {
                 module: &shader,
                 entry_point: "vert_main",
                 buffers: &[
-                    wgpu::VertexBufferLayout {
-                        array_stride: size_of::<Vec3>() as wgpu::BufferAddress,
-                        step_mode: wgpu::VertexStepMode::Vertex,
-                        attributes: &[wgpu::VertexAttribute {
+                    VertexBufferLayout {
+                        array_stride: size_of::<Vec3>() as BufferAddress,
+                        step_mode: VertexStepMode::Vertex,
+                        attributes: &[VertexAttribute {
                             offset: 0,
                             shader_location: 0,
-                            format: wgpu::VertexFormat::Float32x3,
+                            format: VertexFormat::Float32x3,
                         }],
                     },
-                    wgpu::VertexBufferLayout {
-                        array_stride: size_of::<Vec3>() as wgpu::BufferAddress,
-                        step_mode: wgpu::VertexStepMode::Vertex,
-                        attributes: &[wgpu::VertexAttribute {
+                    VertexBufferLayout {
+                        array_stride: size_of::<Vec3>() as BufferAddress,
+                        step_mode: VertexStepMode::Vertex,
+                        attributes: &[VertexAttribute {
                             offset: 0,
                             shader_location: 1,
-                            format: wgpu::VertexFormat::Float32x3,
+                            format: VertexFormat::Float32x3,
                         }],
                     },
                 ],
@@ -394,13 +395,13 @@ impl ThumbRenderer {
 
         // Wait for model to be rendered then retrieve image data from the output buffer
         let buffer_slice = output_buffer.slice(..);
-        let (tx, rx) = tokio::sync::oneshot::channel();
-        buffer_slice.map_async(MapMode::Read, move |result| {
-            tx.send(result)
-                .expect("Failed to send render result to channel");
+        let (tx, rx) = flume::bounded(1);
+        buffer_slice.map_async(MapMode::Read, move |r| {
+            tx.send(r).expect("Failed to send render result to channel");
         });
         device.poll(Maintain::wait()).panic_on_timeout();
-        rx.await
+        rx.recv_async()
+            .await
             .map_err(|e| RenderError::RenderError(format!("Failed to receive render result: {e}")))?
             .map_err(|e| RenderError::RenderError(format!("Failed to map buffer: {e:?}")))?;
         debug!("Output buffer mapped successfully.");

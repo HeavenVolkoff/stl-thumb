@@ -31,5 +31,5 @@ md5  = "0.7.0"
 
 [dependencies.tokio]
 default-features = false
-features         = ["macros"]
+features         = ["macros", "rt-multi-thread"]
 workspace        = true
