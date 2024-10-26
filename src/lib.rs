@@ -1,13 +1,12 @@
 #![cfg_attr(not(feature = "capi"), forbid(unsafe_code))]
 
+#[cfg(feature = "capi")]
+mod capi;
 mod config;
 mod error;
 mod mesh;
 mod render;
 mod shader;
-
-#[cfg(feature = "capi")]
-mod capi;
 
 use std::error::Error;
 use std::path::Path;
