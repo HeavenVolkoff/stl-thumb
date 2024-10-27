@@ -49,14 +49,12 @@ export PKG_CONFIG_PATH
 # Default target
 all: build-shared build-static
 
-ifeq ($(shell uname),Darwin)
 # Build shared library
 build-shared:
 	@echo "Building shared library..."
 	@cargo cbuild $(CARGO_FLAGS) $(CARGO_C_FLAGS) --library-type cdylib
-# cargo-c is generating broken .pc files on macOS, so we need to fix them
-	@sed -i ''-E '/^(Libs|Libs.private):/ s/ -framework//g; /^(Libs|Libs.private):/ s/ ([A-Z][a-zA-Z]+)/ -framework \1/g' $(PKG_CONFIG_PATH)/{stl_thumb.pc,stl_thumb-uninstalled.pc}
 
+ifeq ($(shell uname),Darwin)
 # Build static library
 build-static:
 	@echo "Building static library..."
@@ -64,11 +62,6 @@ build-static:
 # cargo-c is generating broken .pc files on macOS, so we need to fix them
 	@sed -i '' -E '/^(Libs|Libs.private):/ s/ -framework//g; /^(Libs|Libs.private):/ s/ ([A-Z][a-zA-Z]+)/ -framework \1/g' $(PKG_CONFIG_PATH)/{stl_thumb.pc,stl_thumb-uninstalled.pc}
 else
-# Build shared library
-build-shared:
-	@echo "Building shared library..."
-	@cargo cbuild $(CARGO_FLAGS) $(CARGO_C_FLAGS) --library-type cdylib
-
 # Build static library
 build-static:
 	@echo "Building static library..."
@@ -81,7 +74,7 @@ install: build-shared build-static
 	@cargo cinstall $(CARGO_FLAGS) $(CARGO_C_FLAGS) --prefix $(PREFIX)
 
 # Compile and run the test linking against OpenSSL and libstd-thumb
-test: build-static
+test: clean build-static
 	@command -v pkg-config >/dev/null 2>&1 || { echo >&2 "Error: pkg-config is not installed. Please install it to proceed."; exit 1; }
 	@pkg-config --exists openssl || { echo >&2 "Error: OpenSSL is not found. Please install it to proceed."; exit 1; }
 	@echo "Compiling test..."
